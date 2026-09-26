@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Chat from "./components/Chat";
+import ThemeSelectorModal from "./components/ThemeSelectorModal";
+import { getSavedTheme, saveTheme } from "./utils/theme";
 
 import {
   getChats,
@@ -23,6 +25,17 @@ function createNewChat() {
 function App() {
   const [chats, setChats] = useState(() => getChats());
   const [activeChatId, setActiveChatId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Background & Theme state
+  const [currentTheme, setCurrentTheme] = useState(() => getSavedTheme());
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+
+  // Handle Theme Change
+  function handleSelectTheme(theme) {
+    setCurrentTheme(theme);
+    saveTheme(theme.id);
+  }
 
   // =========================
   // Create New Chat
@@ -92,18 +105,32 @@ function App() {
     chats.find((chat) => chat.id === activeChatId) || null;
 
   return (
-    <div className="flex h-screen bg-[#0b0f19] text-slate-100 overflow-hidden antialiased">
+    <div className={`flex h-[100dvh] w-full ${currentTheme.bgClass} text-slate-100 overflow-hidden antialiased transition-colors duration-300`}>
       <Sidebar
         chats={chats}
         activeChatId={activeChatId}
         onNewChat={handleNewChat}
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        currentTheme={currentTheme}
+        onOpenThemeModal={() => setIsThemeModalOpen(true)}
       />
 
       <Chat
         chat={activeChat}
         onUpdateChat={handleUpdateChat}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+        currentTheme={currentTheme}
+        onOpenThemeModal={() => setIsThemeModalOpen(true)}
+      />
+
+      <ThemeSelectorModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentTheme={currentTheme}
+        onSelectTheme={handleSelectTheme}
       />
     </div>
   );
